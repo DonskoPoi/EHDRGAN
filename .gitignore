@@ -1,0 +1,4 @@
+#for MacOs
+._*
+.DS_Store
+#for Pycharm
