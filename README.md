@@ -1,2 +1,2 @@
 # EHDRGAN
-an enhanced GAN network for single photo HDR
+An enhanced GAN network for single photo HDR
