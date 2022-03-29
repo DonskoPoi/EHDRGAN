@@ -1,5 +1,5 @@
 #### general settings
-name: HDRGAN_Debug # name里有debug也可以
+name: HDRGAN_debug # name里有debug也可以
 model_type: EHDRGANModel  # 这里写你自定义的model名字,一定是在models里注册了的model
 use_tb_logger: true
 distortion: sr
@@ -66,7 +66,8 @@ network_d:
 #### path
 path:
   # root: ./
-  # pretrain_model_G: ../experiments/...
+  # pretrain_model_g: ../experiments/...  # 如果有预训练的模型就往这里填
+  # pretrain_model_d: ../experiments/...
   # strict_load: false
   # resume_state: ../experiments/...
   # experiment root
@@ -77,23 +78,39 @@ path:
 
 #### training settings: learning rate scheme, loss
 train:
-  lr_G: !!float 2e-4
-  lr_scheme: MultiStepLR # MultiStepLR | CosineAnnealingLR_Restart
-  beta1: 0.9
-  beta2: 0.99
+  # lr_G: !!float 2e-4
+  # lr_scheme: MultiStepLR # MultiStepLR | CosineAnnealingLR_Restart
+  # beta1: 0.9
+  # beta2: 0.99
   # niter: 1000000 # 600000
   total_iter: 600000  #就是总迭代数，total epoch = total_iter / num_batch
   warmup_iter: -1  # no warm up
 
   # lr_scheme: MultiStepLR
-  lr_steps: [200000, 400000, 600000, 800000]
-  lr_gamma: 0.5
+  # lr_steps: [200000, 400000, 600000, 800000]
+  # lr_gamma: 0.5
+  scheduler:
+    type: MultiStepLR
+    milestones: [200000, 400000, 600000, 800000]
+    gamma: 0.5
 
   pixel_criterion: tanh_l1 # l1 | l2 | tanh_l1 | tanh_l2
   pixel_weight: 1.0
 
   manual_seed: 10
   val_freq: !!float 5e3
+
+  optim_g:
+    type: Adam
+    lr: !!float 2e-4
+    weight_decay: 0
+    betas: [ 0.9, 0.99 ]
+
+  optim_d:
+    type: Adam
+    lr: !!float 2e-4
+    weight_decay: 0
+    betas: [ 0.9, 0.99 ]
 
 #### logger
 logger:
