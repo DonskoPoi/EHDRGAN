@@ -1,13 +1,14 @@
 import os
 import random
-from random import shuffle
-import numpy as np
-import torch
+
+from basicsr.utils.registry import DATASET_REGISTRY
 from torch.utils import data
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
 from PIL import Image
 
+
+@DATASET_REGISTRY.register()
 class ImageFolder(data.Dataset):
 	def __init__(self, root,image_size=224,mode='train',augmentation_prob=0.4):
 		"""Initializes image paths and preprocessing module."""
