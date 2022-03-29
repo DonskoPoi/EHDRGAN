@@ -11,10 +11,10 @@ from basicsr.utils.registry import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()
-class LQGT_dataset(data.Dataset):
+class LQGTDataset(data.Dataset):
 
     def __init__(self, opt):
-        super(LQGT_dataset, self).__init__()
+        super(LQGTDataset, self).__init__()
         self.opt = opt
         self.data_type = self.opt['data_type']
         self.paths_LQ, self.paths_GT = None, None

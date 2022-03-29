@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
+from basicsr.utils.registry import ARCH_REGISTRY
+
 
 def init_weights(net, init_type='normal', gain=0.02):
     def init_func(m):
@@ -346,6 +348,7 @@ class AttU_Net(nn.Module):
         return d1
 
 
+@ARCH_REGISTRY.register()
 class R2AttU_Net(nn.Module):
     def __init__(self,img_ch=3,output_ch=1,t=2):
         super(R2AttU_Net,self).__init__()

@@ -1,9 +1,9 @@
 #### general settings
-name:  # name里有debug也可以
+name: HDRGAN_Debug # name里有debug也可以
 model_type: EHDRGANModel  # 这里写你自定义的model名字,一定是在models里注册了的model
 use_tb_logger: true
 distortion: sr
-scale: 1
+scale: 1  # 这个会自动放到datasets里面
 # gpu_ids: [0]
 num_gpu: auto
 manual_seed: 0
@@ -12,22 +12,26 @@ manual_seed: 0
 datasets:
   train:
     name: Single_LDR2HDR
-    type: LQGT_dataset  # 这里写你注册了的数据集的名字
+    type: LQGTDataset  # 这里写你注册了的数据集的名字
     data_type: img  # img或lmdb
+    condition: image
     # 剩下的这些参数都必须和data/对应type的dataset类需要用到的重合
-    dataroot_LQ: /data0/NTIRE2021_HDR/000_Train_SingleFrame_FirstStage/medium_sub
-    dataroot_GT: /data0/NTIRE2021_HDR/000_Train_SingleFrame_FirstStage/gt_sub
-    dataroot_ratio: /data0/NTIRE2021_HDR/000_Train_SingleFrame_FirstStage/alignratio
+    # 存放gt、ratio、LQ images的文件夹
+    dataroot_LQ: /Volumes/Azi/dataset/NTIRE2021_HDR/train_medium
+    dataroot_GT: /Volumes/Azi/dataset/NTIRE2021_HDR/train_gt
+    dataroot_ratio: /Volumes/Azi/dataset/NTIRE2021_HDR/train_ratio
+
+    num_gpu: 0  # 是否有gpu
+    prefetch_mode: cpu  # cpu or cuda
+
     # n_workers: 8
     # batch_size: 16
+    # @params
     GT_size: 160
     use_flip: true
     use_rot: true
-    condition: image
     # 没看到的
-    # scale: 1
     # phase: train
-    num_gpu: 0  # 是否有gpu
     # dist: false
     # sampler: None
     # seed : None
@@ -36,22 +40,28 @@ datasets:
     num_worker_per_gpu: 8
     batch_size_per_gpu: 16
     dataset_enlarge_ratio: 1
-    prefetch_mode: cpu  # cpu or cuda
-  val:
-    name: Single_LDR2HDR
-    type: LQGT_condition
-    dataroot_LQ: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/medium
-    dataroot_GT: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/gt
-    dataroot_ratio: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/alignratio
-    condition: image
+  # val:
+    # name: Single_LDR2HDR
+    # type: LQGT_condition
+    # dataroot_LQ: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/medium
+    # dataroot_GT: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/gt
+    # dataroot_ratio: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/alignratio
+    # condition: image
 
 #### network structures
-network_G:
-  which_model_G: HDRUNet
-  in_nc: 3
-  out_nc: 3
-  nf: 64
-  act_type: relu
+# generator
+network_g:
+  type: R2AttU_Net
+  img_ch: 3
+  output_ch: 3
+  t: 4
+
+# discriminator
+network_d:
+  type: R2AttU_Net
+  img_ch: 3
+  output_ch: 1
+  t: 2
 
 #### path
 path:
