@@ -77,6 +77,9 @@ class EHDRGANModel(BaseModel):
         if need_GT:
             self.gt = data['GT'].to(self.device)  # GT
 
+        # print(self.lq.shape)
+        # print(self.gt.shape)
+
     def optimize_parameters(self, current_iter):
         # firstly optimizing generator
         # disable gradient in discriminator
@@ -106,8 +109,8 @@ class EHDRGANModel(BaseModel):
                     gen_loss_total += gen_style_loss
                     loss_dict['gen_style_loss'] = gen_style_loss
             # gan loss (relativistic gan)
-            real_d_pred = self.net_d(self.gt).detach()
-            fake_g_pred = self.net_d(self.output)
+            real_d_pred = self.dis_net(self.gt).detach()
+            fake_g_pred = self.dis_net(self.output)
             l_g_real = self.cri_gan(real_d_pred - torch.mean(fake_g_pred), False, is_disc=False)
             l_g_fake = self.cri_gan(fake_g_pred - torch.mean(real_d_pred), True, is_disc=False)
             gen_gan_loss = (l_g_real + l_g_fake) / 2
@@ -120,7 +123,7 @@ class EHDRGANModel(BaseModel):
 
             # then optimize net_d
             # enable gradient
-            for p in self.net_d.parameters():
+            for p in self.dis_net.parameters():
                 p.requires_grad = True
             # init giadient
             self.optimizer_d.zero_grad()
@@ -139,7 +142,7 @@ class EHDRGANModel(BaseModel):
             l_d_real = self.cri_gan(real_d_pred - torch.mean(fake_d_pred), True, is_disc=True) * 0.5
             l_d_real.backward()
             # fake
-            fake_d_pred = self.net_d(self.output.detach())
+            fake_d_pred = self.dis_net(self.output.detach())
             l_d_fake = self.cri_gan(fake_d_pred - torch.mean(real_d_pred.detach()), False, is_disc=True) * 0.5
             l_d_fake.backward()
             self.optimizer_d.step()

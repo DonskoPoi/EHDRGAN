@@ -31,6 +31,7 @@ class LQGTDataset(data.Dataset):
         self.sizes_LQ, self.paths_LQ = util.get_image_paths(self.data_type, opt['dataroot_LQ'])
         self.sizes_GT, self.paths_GT = util.get_image_paths(self.data_type, opt['dataroot_GT'])
         self.folder_ratio = opt['dataroot_ratio']
+
     def __getitem__(self, index):
         GT_path, LQ_path = None, None
         scale = self.opt['scale']
