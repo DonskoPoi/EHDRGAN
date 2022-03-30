@@ -83,7 +83,7 @@ train:
   # beta1: 0.9
   # beta2: 0.99
   # niter: 1000000 # 600000
-  total_iter: 600000  #就是总迭代数，total epoch = total_iter / num_batch
+  total_iter: 600  #就是总迭代数，total epoch = total_iter / num_batch, 600000
   warmup_iter: -1  # no warm up
 
   # lr_scheme: MultiStepLR
@@ -94,11 +94,41 @@ train:
     milestones: [200000, 400000, 600000, 800000]
     gamma: 0.5
 
-  pixel_criterion: tanh_l1 # l1 | l2 | tanh_l1 | tanh_l2
-  pixel_weight: 1.0
+  # options for losses
+  # pixel loss
+  pixel_opt:
+    type: L1Loss      # L1Loss | MSELoss | CharbonnierLoss | WeightedTVLoss | PerceptualLoss | GANLoss
+    loss_weight: 1.0  # gradient_penalty_loss | r1_penalty | g_path_regularize'
+    reduction: mean
+  # perceptual loss
+  perceptual_opt:
+    type: PerceptualLoss
+    layer_weights:
+      # before relu
+      'conv1_2': 0.1
+      'conv2_2': 0.1
+      'conv3_4': 1
+      'conv4_4': 1
+      'conv5_4': 1
+    vgg_type: vgg19
+    use_input_norm: true
+    perceptual_weight: !!float 1.0
+    style_weight: 0
+    range_norm: false
+    criterion: l1
+  # gan loss
+  gan_opt:
+    type: GANLoss
+    gan_type: vanilla
+    real_label_val: 1.0
+    fake_label_val: 0.0
+    loss_weight: !!float 1e-1
 
   manual_seed: 10
   val_freq: !!float 5e3
+
+  # net_d_iter: 1  discriminator的迭代数 意思是总iter迭代n次才会计算一次loss
+  # net_d_init_iters: 0
 
   optim_g:
     type: Adam

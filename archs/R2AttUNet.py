@@ -350,6 +350,7 @@ class AttU_Net(nn.Module):
 
 @ARCH_REGISTRY.register()
 class R2AttU_Net(nn.Module):
+    # input of the network is patch_size=256 * 256, crop_size=480 * 480
     def __init__(self,img_ch=3,output_ch=1,t=2):
         super(R2AttU_Net,self).__init__()
         

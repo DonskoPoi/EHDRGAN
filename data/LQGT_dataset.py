@@ -1,3 +1,4 @@
+import os
 import random
 import numpy as np
 import cv2
@@ -19,10 +20,17 @@ class LQGTDataset(data.Dataset):
         self.data_type = self.opt['data_type']
         self.paths_LQ, self.paths_GT = None, None
 
+        # 由于mac的文件夹里会出现.DS_Store以及一堆._*文件，这里要删掉
+        os.system(f"rm -rf {opt['dataroot_LQ']}/.DS_Store")
+        os.system(f"rm -rf {opt['dataroot_GT']}/.DS_Store")
+        os.system(f"rm -rf {opt['dataroot_ratio']}/.DS_Store")
+        os.system(f"rm -rf {opt['dataroot_LQ']}/._*")
+        os.system(f"rm -rf {opt['dataroot_GT']}/._*")
+        os.system(f"rm -rf {opt['dataroot_ratio']}/._*")
+
         self.sizes_LQ, self.paths_LQ = util.get_image_paths(self.data_type, opt['dataroot_LQ'])
         self.sizes_GT, self.paths_GT = util.get_image_paths(self.data_type, opt['dataroot_GT'])
         self.folder_ratio = opt['dataroot_ratio']
-
     def __getitem__(self, index):
         GT_path, LQ_path = None, None
         scale = self.opt['scale']
@@ -30,6 +38,7 @@ class LQGTDataset(data.Dataset):
 
         # get LQ image
         LQ_path = self.paths_LQ[index]
+        # print(LQ_path)
         img_LQ = util.read_imgdata(LQ_path, ratio=255.0)
 
         # get GT alignratio
@@ -60,27 +69,27 @@ class LQGTDataset(data.Dataset):
             # augmentation - flip, rotate
             img_LQ, img_GT = util.augment([img_LQ, img_GT], self.opt['use_flip'],
                                           self.opt['use_rot'])
-
+            # print(f'LQ size:{img_LQ.shape}, GT size:{img_GT.shape}')
         # condition
-        if self.opt['condition'] == 'image':
-            cond = img_LQ.copy()
-        elif self.opt['condition'] == 'gradient':
-            cond = util.calculate_gradient(img_LQ)
+        # if self.opt['condition'] == 'image':
+            # cond = img_LQ.copy()
+        # elif self.opt['condition'] == 'gradient':
+            # cond = util.calculate_gradient(img_LQ)
 
         # BGR to RGB, HWC to CHW, numpy to tensor
         if img_GT.shape[2] == 3:
             img_GT = img_GT[:, :, [2, 1, 0]]
             img_LQ = img_LQ[:, :, [2, 1, 0]]
-            cond = cond[:, :, [2, 1, 0]]
+            # cond = cond[:, :, [2, 1, 0]]
 
         H, W, _ = img_LQ.shape
         img_GT = torch.from_numpy(np.ascontiguousarray(np.transpose(img_GT, (2, 0, 1)))).float()
         img_LQ = torch.from_numpy(np.ascontiguousarray(np.transpose(img_LQ, (2, 0, 1)))).float()
-        cond = torch.from_numpy(np.ascontiguousarray(np.transpose(cond, (2, 0, 1)))).float()
+        # cond = torch.from_numpy(np.ascontiguousarray(np.transpose(cond, (2, 0, 1)))).float()
 
         if LQ_path is None:
             LQ_path = GT_path
-        return {'LQ': img_LQ, 'GT': img_GT, 'cond': cond, 'LQ_path': LQ_path, 'GT_path': GT_path}
+        return {'LQ': img_LQ, 'GT': img_GT, 'LQ_path': LQ_path, 'GT_path': GT_path}
 
     def __len__(self):
         return len(self.paths_GT)
