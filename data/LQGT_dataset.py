@@ -35,7 +35,7 @@ class LQGTDataset(data.Dataset):
     def __getitem__(self, index):
         GT_path, LQ_path = None, None
         scale = self.opt['scale']
-        GT_size = self.opt['GT_size']
+        GT_size = self.opt.get('GT_size', -1)
 
         # get LQ image
         LQ_path = self.paths_LQ[index]
@@ -90,7 +90,7 @@ class LQGTDataset(data.Dataset):
 
         if LQ_path is None:
             LQ_path = GT_path
-        return {'LQ': img_LQ, 'GT': img_GT, 'LQ_path': LQ_path, 'GT_path': GT_path}
+        return {'LQ': img_LQ, 'GT': img_GT, 'LQ_path': LQ_path, 'GT_path': GT_path, 'ratio_path': ratio_path}
 
     def __len__(self):
         return len(self.paths_GT)

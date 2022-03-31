@@ -1,12 +1,18 @@
+import os.path
+
+import cv2
 import torch
 
 from basicsr.utils.registry import MODEL_REGISTRY
 from basicsr.models.base_model import BaseModel
 from basicsr.archs import build_network
 from basicsr.losses import build_loss
+from basicsr.utils import get_root_logger
 from collections import OrderedDict
+from scripts import visualize as vs
+import utils.util as util
+import numpy as np
 from archs.R2AttUNet import R2AttU_Net
-
 
 @MODEL_REGISTRY.register()
 class EHDRGANModel(BaseModel):
@@ -21,7 +27,7 @@ class EHDRGANModel(BaseModel):
         self.dis_net = build_network(opt['network_d'])
         self.dis_net = self.model_to_device(self.dis_net)
 
-        if 'debug' in opt['name']:
+        if 'debug' in opt['name'] and opt['show_network']:
             self.print_network(self.gen_net)
             self.print_network(self.dis_net)
 
@@ -62,6 +68,9 @@ class EHDRGANModel(BaseModel):
         self.setup_optimizer(train_opt)
         self.setup_schedulers()
 
+        # get logger
+        self.logger = get_root_logger()
+
     def setup_optimizer(self, train_opt):
         # optimizer g
         optim_type = train_opt['optim_g'].pop('type')
@@ -76,6 +85,8 @@ class EHDRGANModel(BaseModel):
         self.lq = data['LQ'].to(self.device)  # LQ
         if need_GT:
             self.gt = data['GT'].to(self.device)  # GT
+        if 'debug' in self.opt['name']:
+            self.logger.info(f'feed data complete')
 
         # print(self.lq.shape)
         # print(self.gt.shape)
@@ -87,7 +98,9 @@ class EHDRGANModel(BaseModel):
             p.requires_grad = False
         # init grident
         self.optimizer_g.zero_grad()
-        # get output
+        # generate output
+        # training input: [batch_size, 3, GT_size, GT,size] with range 0-255 (unit8)
+        # network output: [batch_size, 3, GT_size, GT,size] with range 0-65535 (unit16)
         self.output = self.gen_net(self.lq)
         # init loss
         gen_loss_total = 0
@@ -111,6 +124,7 @@ class EHDRGANModel(BaseModel):
             # gan loss (relativistic gan)
             real_d_pred = self.dis_net(self.gt).detach()
             fake_g_pred = self.dis_net(self.output)
+
             l_g_real = self.cri_gan(real_d_pred - torch.mean(fake_g_pred), False, is_disc=False)
             l_g_fake = self.cri_gan(fake_g_pred - torch.mean(real_d_pred), True, is_disc=False)
             gen_gan_loss = (l_g_real + l_g_fake) / 2
@@ -159,3 +173,77 @@ class EHDRGANModel(BaseModel):
         self.save_network(self.dis_net, 'dis_net', current_iter)
         self.save_training_state(epoch, current_iter)
 
+    def validation(self, dataloader, current_iter, tb_logger, save_img=False):
+        '''
+        use for calculate psnr for validate
+        '''
+        avg_psnr = 0.0
+        avg_normalized_psnr = 0.0
+        avg_tonemapped_psnr = 0.0
+        idx = 0
+        for val_data in dataloader:
+            idx += 1
+
+            # load data
+            self.feed_data(val_data)
+
+            # inference
+            fake_hdr = self.inference()
+
+            # transfer fake_hdr, gt to numpy
+            fake_hdr = fake_hdr.detach()[0].float().cpu()
+            gt = self.gt.detach()[0].float().cpu()
+
+            fake_hdr_img = util.tensor2numpy(fake_hdr)
+            gt_img = util.tensor2numpy(gt)
+
+            # calculate psnr
+            avg_psnr += util.calculate_psnr(fake_hdr_img, gt_img)
+            avg_normalized_psnr += util.calculate_normalized_psnr(fake_hdr_img, gt_img, np.max(gt_img))
+            avg_tonemapped_psnr += util.calculate_tonemapped_psnr(fake_hdr_img, gt_img, percentile=99, gamma=2.24)
+
+            # visualize
+            if save_img:
+                ratio_path = val_data['ratio_path'][0]
+                lq_path = val_data['LQ_path'][0]
+                filename = lq_path.split('/')[-1][:16] + '_visualize.png'
+                result = vs.visualize_with_gt(gt_img, fake_hdr_img, ratio_path)
+                self.logger.info(f"saving visualize image to {os.path.join(self.opt['path']['visualization'], filename)}")
+                cv2.imwrite(os.path.join(self.opt['path']['visualization'], filename), result)
+
+
+        # calculate avg
+        avg_psnr /= idx
+        avg_normalized_psnr /= idx
+        avg_tonemapped_psnr /= idx
+
+        # log
+        self.logger.info(
+            '# Validation # PSNR: {:.4e}, norm_PSNR: {:.4e}, mu_PSNR: {:.4e}'.format(
+                avg_psnr,
+                avg_normalized_psnr,
+                avg_tonemapped_psnr
+            )
+        )
+        if tb_logger:
+            tb_logger.add_scalar('psnr', avg_psnr, current_iter)
+            tb_logger.add_scalar('norm_PSNR', avg_normalized_psnr, current_iter)
+            tb_logger.add_scalar('mu_PSNR', avg_tonemapped_psnr, current_iter)
+
+    def inference(self):
+        # get test data
+        self.gen_net.eval()
+        with torch.no_grad():
+            fake_hdr = self.gen_net(self.lq)
+        self.gen_net.train()
+        return fake_hdr
+
+    def load_gen(self, load_path, strict=True):
+        '''
+        load weights of generator
+        :param load_path: weigths path (i.e. xxx.pth)
+        :param strict: strict load
+        :return: None
+        '''
+        self.logger.info(f'loading weights for generation using {load_path}')
+        self.load_network(self.gen_net, load_path, strict=strict)

@@ -1,7 +1,8 @@
 #### general settings
-name: HDRGAN_debug # name里有debug也可以
+name: HDRGAN # name里有debug也可以
 model_type: EHDRGANModel  # 这里写你自定义的model名字,一定是在models里注册了的model
-use_tb_logger: true
+show_network: false
+use_tb_logger: true  # tensor board logger
 distortion: sr
 scale: 1  # 这个会自动放到datasets里面
 # gpu_ids: [0]
@@ -17,8 +18,8 @@ datasets:
     condition: image
     # 剩下的这些参数都必须和data/对应type的dataset类需要用到的重合
     # 存放gt、ratio、LQ images的文件夹
-    dataroot_LQ: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_medium
-    dataroot_GT: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_gt
+    dataroot_LQ: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_medium_sub
+    dataroot_GT: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_gt_sub
     dataroot_ratio: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_ratio
 
     num_gpu: 0  # 是否有gpu
@@ -38,15 +39,16 @@ datasets:
     # use_shuffle: true
     # num_prefetch_queue: ?
     num_worker_per_gpu: 8
-    batch_size_per_gpu: 16
+    batch_size_per_gpu: 4  # 16
     dataset_enlarge_ratio: 1
-  # val:
-    # name: Single_LDR2HDR
-    # type: LQGT_condition
-    # dataroot_LQ: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/medium
-    # dataroot_GT: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/gt
-    # dataroot_ratio: /data0/NTIRE2021_HDR/000_Valid_SingleFrame_FirstStage/alignratio
-    # condition: image
+  val:
+     name: Single_LDR2HDR_val
+     type: LQGTDataset
+     data_type: img
+     dataroot_LQ: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_medium_sub
+     dataroot_GT: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_gt_sub
+     dataroot_ratio: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_ratio
+     condition: image
 
 #### network structures
 # generator
@@ -83,7 +85,7 @@ train:
   # beta1: 0.9
   # beta2: 0.99
   # niter: 1000000 # 600000
-  total_iter: 600  #就是总迭代数，total epoch = total_iter / num_batch, 600000
+  total_iter: 8  #就是总迭代数，total epoch = total_iter / num_batch, 600000
   warmup_iter: -1  # no warm up
 
   # lr_scheme: MultiStepLR
@@ -125,7 +127,6 @@ train:
     loss_weight: !!float 1e-1
 
   manual_seed: 10
-  val_freq: !!float 5e3
 
   # net_d_iter: 1  discriminator的迭代数 意思是总iter迭代n次才会计算一次loss
   # net_d_init_iters: 0
@@ -141,11 +142,15 @@ train:
     lr: !!float 2e-4
     weight_decay: 0
     betas: [ 0.9, 0.99 ]
-
+#validation
+val:
+  # validation frequent
+  val_freq: !!float 1.0   # !!float 5e3 = 存checkpoint的频率
+  save_img: true
 #### logger
 logger:
   print_freq: 1  # 100
-  save_checkpoint_freq: !!float 1e1 # !!float 5e3
+  save_checkpoint_freq: !!float 1.0 # !!float 5e3
   use_tb_logger: true  # 是否使用logger
   wandb:
     project: ~
