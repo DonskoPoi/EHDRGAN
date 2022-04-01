@@ -1,11 +1,12 @@
 #### general settings
-name: HDRGAN # name里有debug也可以
+name: EHDRGAN # name里有debug也可以
 model_type: EHDRGANModel  # 这里写你自定义的model名字,一定是在models里注册了的model
 show_network: false
 use_tb_logger: true  # tensor board logger
 distortion: sr
 scale: 1  # 这个会自动放到datasets里面
 # gpu_ids: [0]
+# dist:  分布式训练
 num_gpu: auto
 manual_seed: 0
 

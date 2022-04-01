@@ -32,7 +32,7 @@ def imwrite_uint16_png(image_path, image, alignratio_path):
             np.ndarray (np.float32, (h,w,3)): Returns the RGB HDR image specified in image_path.
 
     """
-    align_ratio = (2 ** 16 - 1) / image.max()
+    align_ratio = (2 ** 16 - 1) / image.max()  # 65535/image.max()
     np.save(alignratio_path, align_ratio)
     uint16_image_gt = np.round(image * align_ratio).astype(np.uint16)
     cv2.imwrite(image_path, cv2.cvtColor(uint16_image_gt, cv2.COLOR_RGB2BGR))

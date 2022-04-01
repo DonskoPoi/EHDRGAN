@@ -40,7 +40,7 @@ class LQGTDataset(data.Dataset):
         # get LQ image
         LQ_path = self.paths_LQ[index]
         # print(LQ_path)
-        img_LQ = util.read_imgdata(LQ_path, ratio=255.0)
+        img_LQ = util.read_imgdata(LQ_path, ratio=255.0) # -> lq都是normalized by 255的(/255)
 
         # get GT alignratio
         filename = osp.basename(LQ_path)[:4] + "_alignratio.npy"
@@ -49,7 +49,7 @@ class LQGTDataset(data.Dataset):
 
         # get GT image
         GT_path = self.paths_GT[index]
-        img_GT = util.read_imgdata(GT_path, ratio=alignratio)
+        img_GT = util.read_imgdata(GT_path, ratio=alignratio)  # -> gt都是/alignratio的也就是还原到0-255色彩空间的图
 
         if self.opt['phase'] == 'train':
 

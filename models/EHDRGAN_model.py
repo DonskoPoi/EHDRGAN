@@ -18,58 +18,69 @@ from archs.R2AttUNet import R2AttU_Net
 class EHDRGANModel(BaseModel):
     def __init__(self, opt):
         super(EHDRGANModel, self).__init__(opt)
-        train_opt = opt['train']
+        if self.is_train:
+            train_opt = opt['train']  # check if the model is in training progress
+        need_dis = True if 'network_d' in opt else False  # check if the model needs to initialize discriminator
+        # get logger
+        self.logger = get_root_logger()
+
+        if not need_dis:
+            self.logger.info('you will not initial discriminator network due to the lack of discriminator options')
 
         # init generator
         self.gen_net = build_network(opt['network_g'])
         self.gen_net = self.model_to_device(self.gen_net)
         # init discriminator
-        self.dis_net = build_network(opt['network_d'])
-        self.dis_net = self.model_to_device(self.dis_net)
+        if need_dis:
+            self.dis_net = build_network(opt['network_d'])
+            self.dis_net = self.model_to_device(self.dis_net)
 
         if 'debug' in opt['name'] and opt['show_network']:
             self.print_network(self.gen_net)
-            self.print_network(self.dis_net)
+            if need_dis:
+                self.print_network(self.dis_net)
 
         # load pretrained models for both networks
-        load_path = self.opt['path'].get('pretrain_network_g', None)
-        if load_path is not None:
-            param_key = self.opt['path'].get('param_key_g', 'params')
-            self.load_network(self.gen_net, load_path, self.opt['path'].get('strict_load_g', True), param_key)
-        load_path = self.opt['path'].get('pretrain_network_d', None)
-        if load_path is not None:
-            param_key = self.opt['path'].get('param_key_d', 'params')
-            self.load_network(self.dis_net, load_path, self.opt['path'].get('strict_load_d', True), param_key)
+        if 'path' in opt:
+            load_path = self.opt['path'].get('pretrain_network_g', None)
+            if load_path is not None:
+                param_key = self.opt['path'].get('param_key_g', 'params')
+                self.load_network(self.gen_net, load_path, self.opt['path'].get('strict_load_g', True), param_key)
+            load_path = self.opt['path'].get('pretrain_network_d', None)
+            if load_path is not None and need_dis:
+                param_key = self.opt['path'].get('param_key_d', 'params')
+                self.load_network(self.dis_net, load_path, self.opt['path'].get('strict_load_d', True), param_key)
 
         # set networks in training model
         if self.is_train:
             self.gen_net.train()
-            self.dis_net.train()
+            if need_dis:
+                self.dis_net.train()
 
         # set iters of discriminator
-        self.dis_iters = train_opt.get('net_d_iters', 1)
-        self.dis_init_iters = train_opt.get('net_d_init_iters', 0)
+        if need_dis:
+            self.dis_iters = train_opt.get('net_d_iters', 1)
+            self.dis_init_iters = train_opt.get('net_d_init_iters', 0)
 
         # define losses
-        if train_opt.get('pixel_opt'):
-            self.cri_pix = build_loss(train_opt['pixel_opt']).to(self.device)
-        else:
-            self.cri_pix = None
+        if self.is_train:
+            if train_opt.get('pixel_opt'):
+                self.cri_pix = build_loss(train_opt['pixel_opt']).to(self.device)
+            else:
+                self.cri_pix = None
 
-        if train_opt.get('perceptual_opt'):
-            self.cri_perceptual = build_loss(train_opt['perceptual_opt']).to(self.device)
-        else:
-            self.cri_perceptual = None
+            if train_opt.get('perceptual_opt'):
+                self.cri_perceptual = build_loss(train_opt['perceptual_opt']).to(self.device)
+            else:
+                self.cri_perceptual = None
 
-        if train_opt.get('gan_opt'):
-            self.cri_gan = build_loss(train_opt['gan_opt']).to(self.device)
+            if train_opt.get('gan_opt'):
+                self.cri_gan = build_loss(train_opt['gan_opt']).to(self.device)
 
         # setup optimizer and schedulers
-        self.setup_optimizer(train_opt)
-        self.setup_schedulers()
-
-        # get logger
-        self.logger = get_root_logger()
+        if self.is_train:
+            self.setup_optimizer(train_opt)
+            self.setup_schedulers()
 
     def setup_optimizer(self, train_opt):
         # optimizer g
@@ -195,7 +206,7 @@ class EHDRGANModel(BaseModel):
             gt = self.gt.detach()[0].float().cpu()
 
             fake_hdr_img = util.tensor2numpy(fake_hdr)
-            gt_img = util.tensor2numpy(gt)
+            gt_img = util.tensor2numpy(gt)  # -> float32, [h, w, 3]
 
             # calculate psnr
             avg_psnr += util.calculate_psnr(fake_hdr_img, gt_img)
@@ -204,10 +215,9 @@ class EHDRGANModel(BaseModel):
 
             # visualize
             if save_img:
-                ratio_path = val_data['ratio_path'][0]
                 lq_path = val_data['LQ_path'][0]
                 filename = lq_path.split('/')[-1][:16] + '_visualize.png'
-                result = vs.visualize_with_gt(gt_img, fake_hdr_img, ratio_path)
+                result = vs.visualize_with_gt(gt_img, fake_hdr_img)
                 self.logger.info(f"saving visualize image to {os.path.join(self.opt['path']['visualization'], filename)}")
                 cv2.imwrite(os.path.join(self.opt['path']['visualization'], filename), result)
 

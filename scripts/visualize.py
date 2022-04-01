@@ -1,20 +1,15 @@
 import numpy as np
 import scripts.metrics as m
 
-def visualize_with_gt(gt_img, pred_img, ratio_path):
+def visualize_with_gt(gt_img, pred_img):
     '''
     this function is for tune map your output image with gt and ratio
+    the two input image(output by network) is within the range of 0-255
     :param gt_img: your ground truth image with float32 numpy BGR
     :param pred_img: your hdr image generated from the model with float32 numpy BGR
-    :param ratio_path: the alignratio.npy file path
     :return: a tone-mapped hdr image with uint8 BGR numpy form
     '''
 
-    # load ratio
-    ratio = np.load(ratio_path).astype(np.float32)
-    # 65536->256
-    pred_img /= ratio
-    gt_img /= ratio
     # gamma correction: none liner to liner image
     pred_img **= 2.24
     gt_img **= 2.24
@@ -32,10 +27,6 @@ def visualize(pred_img):
     :param ratio_path: the alignratio.npy file path
     :return: a tone-mapped hdr image with uint8 BGR numpy form
     '''
-    # load ratio
-    ratio = np.float32(65535/255)
-    # 65536->256
-    pred_img /= ratio
     # gamma correction: none liner to liner image
     pred_img **= 2.24
-    return pred_img.round().astype(np.unit8)
+    return pred_img.round().astype(np.uint8)
