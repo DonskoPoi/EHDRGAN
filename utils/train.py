@@ -1,4 +1,6 @@
 import os.path
+import sys
+sys.path.append('..')
 
 from basicsr.train import train_pipeline
 
