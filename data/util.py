@@ -410,3 +410,34 @@ def guided_filter(img_LR, r=5, eps=0.01):
     for i in range(3):
         img[:,:,i] = filtering(img[:,:,i], r, eps)
     return img
+
+def get_path_from_txt(data_type, root_path, txt_name='index.txt'):
+    '''
+    :param image_type: img or lmdb
+    :param root_path: dir stores index.txt file and all images
+    :param txt_name: your index file name usually is index.txt
+    :return: paths of image and list size
+    '''
+    paths, size = None, None
+    if root_path is not None:
+        if data_type == 'img':
+            txt_path = os.path.join(root_path, txt_name)
+            assert os.path.exists(root_path) is True, f'{root_path} does not exist'
+            assert os.path.isfile(txt_path) is True, f'{txt_path} does not exist'
+            paths = list()
+            with open(txt_path, mode='r') as f:
+                ori_list = f.readlines()
+                size = len(ori_list)
+                if size == 0:
+                    raise NotImplementedError(f'index file {txt_name} does not have data')
+                else:
+                    for filename in ori_list:
+                        filename = filename.strip()
+                        paths.append(os.path.join(root_path, filename))
+        elif data_type == 'lmdb':
+            raise NotImplementedError('data_type lmdb is not supported.'.format(data_type))
+        else:
+            raise NotImplementedError('data_type [{:s}] is not recognized.'.format(data_type))
+    return size, paths
+
+

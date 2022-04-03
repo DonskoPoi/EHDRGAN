@@ -28,8 +28,8 @@ class LQGTDataset(data.Dataset):
         os.system(f"rm -rf {opt['dataroot_GT']}/._*")
         os.system(f"rm -rf {opt['dataroot_ratio']}/._*")
 
-        self.sizes_LQ, self.paths_LQ = util.get_image_paths(self.data_type, opt['dataroot_LQ'])
-        self.sizes_GT, self.paths_GT = util.get_image_paths(self.data_type, opt['dataroot_GT'])
+        self.sizes_LQ, self.paths_LQ = util.get_path_from_txt(self.data_type, opt['dataroot_LQ'])
+        self.sizes_GT, self.paths_GT = util.get_path_from_txt(self.data_type, opt['dataroot_GT'])
         self.folder_ratio = opt['dataroot_ratio']
 
     def __getitem__(self, index):
