@@ -1,1 +1,1 @@
-python3 -u -m utils.train -opt /workspace/EHDRGAN/options/train.yml --launcher none
+python3 -u /workspace/EHDRGAN/utils/train.py -opt /workspace/EHDRGAN/options/train.yml --launcher none
