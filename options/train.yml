@@ -99,8 +99,8 @@ train:
   # options for losses
   # pixel loss
   pixel_opt:
-    type: L1Loss      # L1Loss | MSELoss | CharbonnierLoss | WeightedTVLoss | PerceptualLoss | GANLoss
-    loss_weight: 1.0  # gradient_penalty_loss | r1_penalty | g_path_regularize'
+    type: tanhL1      # L1Loss | MSELoss | CharbonnierLoss | WeightedTVLoss | PerceptualLoss | GANLoss
+    loss_weight: 1.0  # gradient_penalty_loss | r1_penalty | g_path_regularize' | tanhL1 | tanhL2
     reduction: mean
   # perceptual loss
   perceptual_opt:
