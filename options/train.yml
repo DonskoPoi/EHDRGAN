@@ -23,7 +23,6 @@ datasets:
     dataroot_GT: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_gt_sub
     dataroot_ratio: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_ratio
 
-    num_gpu: 0  # 是否有gpu
     prefetch_mode: cpu  # cpu or cuda
     pin_memory: false
     # n_workers: 8
@@ -40,7 +39,7 @@ datasets:
     # use_shuffle: true
     # num_prefetch_queue: ?
     num_worker_per_gpu: 8
-    batch_size_per_gpu: 4  # 16
+    batch_size_per_gpu: 16  # 16
     dataset_enlarge_ratio: 1
   val:
      name: Single_LDR2HDR_val
@@ -86,7 +85,7 @@ train:
   # beta1: 0.9
   # beta2: 0.99
   # niter: 1000000 # 600000
-  total_iter: 8  #就是总迭代数，total epoch = total_iter / num_batch, 600000
+  total_iter: 1000000  #就是总迭代数，total epoch = total_iter / num_batch, 600000
   warmup_iter: -1  # no warm up
 
   # lr_scheme: MultiStepLR
@@ -146,12 +145,12 @@ train:
 #validation
 val:
   # validation frequent
-  val_freq: !!float 1.0   # !!float 5e3 = 存checkpoint的频率
+  val_freq: !!float 5e3 # = 存checkpoint的频率
   save_img: true
 #### logger
 logger:
-  print_freq: 1  # 100
-  save_checkpoint_freq: !!float 1.0 # !!float 5e3
+  print_freq: 100  # 100
+  save_checkpoint_freq: !!float 5e3
   use_tb_logger: true  # 是否使用logger
   wandb:
     project: ~

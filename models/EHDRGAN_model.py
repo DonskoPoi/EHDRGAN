@@ -215,11 +215,12 @@ class EHDRGANModel(BaseModel):
 
             # visualize
             if save_img:
-                lq_path = val_data['LQ_path'][0]
-                filename = lq_path.split('/')[-1][:16] + '_visualize.png'
-                result = vs.visualize_with_gt(gt_img, fake_hdr_img)
-                self.logger.info(f"saving visualize image to {os.path.join(self.opt['path']['visualization'], filename)}")
-                cv2.imwrite(os.path.join(self.opt['path']['visualization'], filename), result)
+                if idx % 1000 == 0:
+                    lq_path = val_data['LQ_path'][0]
+                    filename = lq_path.split('/')[-1][:16] + f'_{current_iter}_visualize.png'
+                    result = vs.visualize_with_gt(gt_img, fake_hdr_img)
+                    self.logger.info(f"saving visualize image to {os.path.join(self.opt['path']['visualization'], filename)}")
+                    cv2.imwrite(os.path.join(self.opt['path']['visualization'], filename), result)
 
 
         # calculate avg
