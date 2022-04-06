@@ -203,6 +203,7 @@ class U_Net(nn.Module):
         return d1
 
 
+@ARCH_REGISTRY.register()
 class R2U_Net(nn.Module):
     def __init__(self,img_ch=3,output_ch=1,t=2):
         super(R2U_Net,self).__init__()
@@ -274,7 +275,7 @@ class R2U_Net(nn.Module):
         return d1
 
 
-
+@ARCH_REGISTRY.register()
 class AttU_Net(nn.Module):
     def __init__(self,img_ch=3,output_ch=1):
         super(AttU_Net,self).__init__()

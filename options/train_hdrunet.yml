@@ -19,12 +19,12 @@ datasets:
     condition: image
     # 剩下的这些参数都必须和data/对应type的dataset类需要用到的重合
     # 存放gt、ratio、LQ images的文件夹
-    dataroot_LQ: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_medium_sub
-    dataroot_GT: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_gt_sub
-    dataroot_ratio: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_ratio
+    dataroot_LQ: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_medium
+    dataroot_GT: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_gt
+    dataroot_ratio: /Users/azusa/Documents/dataset/NTIRE2021_HDR/train_ratio
 
-    prefetch_mode: cuda  # cpu or cuda
-    pin_memory: true
+    prefetch_mode: cpu  # cpu or cuda
+    pin_memory: false
     # n_workers: 8
     # batch_size: 16
     # @params
@@ -45,19 +45,20 @@ datasets:
      name: Single_LDR2HDR_val
      type: LQGTDataset
      data_type: img
-     dataroot_LQ: /Volumes/Azi/dataset/NTIRE2021_HDR/val/val_medium_sub
-     dataroot_GT: /Volumes/Azi/dataset/NTIRE2021_HDR/val/val_gt_sub
-     dataroot_ratio: /Volumes/Azi/dataset/NTIRE2021_HDR/val/val_ratio
+     dataroot_LQ: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_gt
+     dataroot_GT: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_gt
+     dataroot_ratio: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_gt
      condition: image
 
 #### network structures
 # network type: R2AttU_Net | AttU_Net | R2U_Net | HDRUNet
 # generator
 network_g:
-  type: R2AttU_Net
-  img_ch: 3
-  output_ch: 3
-  t: 4
+  type: HDRUNet
+  in_nc: 3
+  out_nc: 3
+  nf: 64
+  act_type: relu
 
 # discriminator
 network_d:

@@ -72,25 +72,31 @@ class LQGTDataset(data.Dataset):
                                           self.opt['use_rot'])
             # print(f'LQ size:{img_LQ.shape}, GT size:{img_GT.shape}')
         # condition
-        # if self.opt['condition'] == 'image':
-            # cond = img_LQ.copy()
-        # elif self.opt['condition'] == 'gradient':
-            # cond = util.calculate_gradient(img_LQ)
+        is_cond = True if self.opt.get('condition') is not None else False
+        if is_cond:
+            if self.opt['condition'] == 'image':
+                cond = img_LQ.copy()
+            elif self.opt['condition'] == 'gradient':
+                cond = util.calculate_gradient(img_LQ)
+        else:
+            cond = None
 
         # BGR to RGB, HWC to CHW, numpy to tensor
         if img_GT.shape[2] == 3:
             img_GT = img_GT[:, :, [2, 1, 0]]
             img_LQ = img_LQ[:, :, [2, 1, 0]]
-            # cond = cond[:, :, [2, 1, 0]]
+            if is_cond:
+                cond = cond[:, :, [2, 1, 0]]
 
         H, W, _ = img_LQ.shape
         img_GT = torch.from_numpy(np.ascontiguousarray(np.transpose(img_GT, (2, 0, 1)))).float()
         img_LQ = torch.from_numpy(np.ascontiguousarray(np.transpose(img_LQ, (2, 0, 1)))).float()
-        # cond = torch.from_numpy(np.ascontiguousarray(np.transpose(cond, (2, 0, 1)))).float()
+        if is_cond:
+            cond = torch.from_numpy(np.ascontiguousarray(np.transpose(cond, (2, 0, 1)))).float()
 
         if LQ_path is None:
             LQ_path = GT_path
-        return {'LQ': img_LQ, 'GT': img_GT, 'LQ_path': LQ_path, 'GT_path': GT_path, 'ratio_path': ratio_path}
+        return {'LQ': img_LQ, 'GT': img_GT, 'LQ_path': LQ_path, 'GT_path': GT_path, 'ratio_path': ratio_path, 'cond': cond}
 
     def __len__(self):
         return len(self.paths_GT)

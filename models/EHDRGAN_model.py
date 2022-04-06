@@ -13,6 +13,10 @@ from scripts import visualize as vs
 import utils.util as util
 import numpy as np
 from archs.R2AttUNet import R2AttU_Net
+from archs.HDRUNet_arch import HDRUNet
+from .customize_loss import tanhL1
+from .customize_loss import tanhL2
+
 
 @MODEL_REGISTRY.register()
 class EHDRGANModel(BaseModel):
@@ -21,6 +25,11 @@ class EHDRGANModel(BaseModel):
         if self.is_train:
             train_opt = opt['train']  # check if the model is in training progress
         need_dis = True if 'network_d' in opt else False  # check if the model needs to initialize discriminator
+        # 是否使用cond图层
+        self.is_cond = True \
+            if opt['datasets']['train'].get('condition') is not None and \
+               opt['datasets']['val'].get('condition') is not None \
+            else False
         # get logger
         self.logger = get_root_logger()
 
@@ -94,6 +103,8 @@ class EHDRGANModel(BaseModel):
 
     def feed_data(self, data, need_GT=True):
         self.lq = data['LQ'].to(self.device)  # LQ
+        if self.is_cond:
+            self.cond = data['cond'].to(self.device)  # cond
         if need_GT:
             self.gt = data['GT'].to(self.device)  # GT
         if 'debug' in self.opt['name']:
@@ -112,7 +123,10 @@ class EHDRGANModel(BaseModel):
         # generate output
         # training input: [batch_size, 3, GT_size, GT,size] with range 0-255 (unit8)
         # network output: [batch_size, 3, GT_size, GT,size] with range 0-65535 (unit16)
-        self.output = self.gen_net(self.lq)
+        if self.is_cond:
+            self.output = self.gen_net((self.lq, self.cond))
+        else:
+            self.output = self.gen_net(self.lq)
         # init loss
         gen_loss_total = 0
         loss_dict = OrderedDict()
@@ -245,7 +259,10 @@ class EHDRGANModel(BaseModel):
         # get test data
         self.gen_net.eval()
         with torch.no_grad():
-            fake_hdr = self.gen_net(self.lq)
+            if self.is_cond:
+                fake_hdr = self.gen_net((self.lq, self.cond))
+            else:
+                fake_hdr = self.gen_net(self.lq)
         self.gen_net.train()
         return fake_hdr
 
