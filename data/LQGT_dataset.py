@@ -20,17 +20,9 @@ class LQGTDataset(data.Dataset):
         self.data_type = self.opt['data_type']
         self.paths_LQ, self.paths_GT = None, None
 
-        # 由于mac的文件夹里会出现.DS_Store以及一堆._*文件，这里要删掉
-        os.system(f"rm -rf {opt['dataroot_LQ']}/.DS_Store")
-        os.system(f"rm -rf {opt['dataroot_GT']}/.DS_Store")
-        os.system(f"rm -rf {opt['dataroot_ratio']}/.DS_Store")
-        os.system(f"rm -rf {opt['dataroot_LQ']}/._*")
-        os.system(f"rm -rf {opt['dataroot_GT']}/._*")
-        os.system(f"rm -rf {opt['dataroot_ratio']}/._*")
-
-        self.sizes_LQ, self.paths_LQ = util.get_path_from_txt(self.data_type, opt['dataroot_LQ'])
-        self.sizes_GT, self.paths_GT = util.get_path_from_txt(self.data_type, opt['dataroot_GT'])
-        self.folder_ratio = opt['dataroot_ratio']
+        self.sizes_LQ, self.paths_LQ = util.get_path_from_txt(self.data_type, opt.get('dataroot_LQ'))
+        self.sizes_GT, self.paths_GT = util.get_path_from_txt(self.data_type, opt.get('dataroot_GT'))
+        self.folder_ratio = opt.get('dataroot_ratio')
 
     def __getitem__(self, index):
         GT_path, LQ_path = None, None
@@ -99,4 +91,4 @@ class LQGTDataset(data.Dataset):
         return {'LQ': img_LQ, 'GT': img_GT, 'LQ_path': LQ_path, 'GT_path': GT_path, 'ratio_path': ratio_path, 'cond': cond}
 
     def __len__(self):
-        return len(self.paths_GT)
+        return len(self.paths_GT) if self.paths_GT is not None else len(self.paths_LQ)

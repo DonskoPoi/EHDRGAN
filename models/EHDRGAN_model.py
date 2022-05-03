@@ -27,8 +27,7 @@ class EHDRGANModel(BaseModel):
         need_dis = True if 'network_d' in opt else False  # check if the model needs to initialize discriminator
         # 是否使用cond图层
         self.is_cond = True \
-            if opt['datasets']['train'].get('condition') is not None and \
-               opt['datasets']['val'].get('condition') is not None \
+            if opt['network_g']['type'] == 'HDRUNet' \
             else False
         # get logger
         self.logger = get_root_logger()

@@ -1,7 +1,7 @@
 #### general settings
-name: EHDRGAN # name里有debug也可以
+name: EHDRGAN_debug # name里有debug也可以
 model_type: EHDRGANModel  # 这里写你自定义的model名字,一定是在models里注册了的model
-show_network: false
+show_network: true
 use_tb_logger: true  # tensor board logger
 distortion: sr
 scale: 1  # 这个会自动放到datasets里面
@@ -23,7 +23,7 @@ datasets:
     dataroot_GT: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_gt_sub
     dataroot_ratio: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_ratio
 
-    prefetch_mode: cuda  # cpu or cuda
+    prefetch_mode: cpu  # cpu or cuda
     pin_memory: true
     # n_workers: 8
     # batch_size: 16

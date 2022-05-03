@@ -1,7 +1,7 @@
 #### general settings
-name: EHDRGAN # name里有debug也可以
+name: EHDRGAN_debug # name里有debug也可以
 model_type: EHDRGANModel  # 这里写你自定义的model名字,一定是在models里注册了的model
-show_network: false
+show_network: true
 use_tb_logger: true  # tensor board logger
 distortion: sr
 scale: 1  # 这个会自动放到datasets里面
@@ -45,9 +45,9 @@ datasets:
      name: Single_LDR2HDR_val
      type: LQGTDataset
      data_type: img
-     dataroot_LQ: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_gt
-     dataroot_GT: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_gt
-     dataroot_ratio: /Users/azusa/Documents/dataset/NTIRE2021_HDR/val_gt
+     dataroot_LQ: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_medium_sub
+     dataroot_GT: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_gt_sub
+     dataroot_ratio: /Volumes/Azi/dataset/NTIRE2021_HDR/train/train_ratio
      condition: image
 
 #### network structures

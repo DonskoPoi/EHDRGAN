@@ -1,0 +1,28 @@
+name: HDRUNet_tanh_l1
+model_type: EHDRGANModel
+distortion: sr
+scale: 1
+num_gpu: auto
+manual_seed: 0
+
+datasets:
+  val_1:  # the 1st test dataset
+    name: test_1
+    type: LQDataset
+    data_type: img
+    dataroot_LQ: /Volumes/Azi/dataset/NTIRE2021_HDR/val/val_medium_sub
+    condition: image
+
+#### network structures
+network_g:
+  type: HDRUNet
+  in_nc: 3
+  out_nc: 3
+  nf: 64
+  act_type: relu
+
+#### path
+path:
+  root: ./
+  # pretrain_model_G: ../experiments/HDRUNet_tanh_l1_bs_16_ps_160/models/latest_G.pth
+  pretrain_network_g: ../weights/gen_net_385000.pth
