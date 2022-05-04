@@ -44,7 +44,7 @@ def main():
     # create model
     model = build_model(opt)
 
-    # ----------- validation -------------
+    # ----------- generation -------------
     for val_dataloader in val_dataloaders:
         dataset_name = val_dataloader.dataset.opt['name']
         logger.info(f'Validate dataset {dataset_name}...')
@@ -76,7 +76,7 @@ def main():
             tqdm_bar.update(1)
 
         end_time = time.time()
-        logger.info(f'Ending validate {dataset_name}, cost {end_time-start_time:.3f}ms')
+        logger.info(f'Ending validate {dataset_name}, cost {end_time-start_time:.3f}s')
 
 
 

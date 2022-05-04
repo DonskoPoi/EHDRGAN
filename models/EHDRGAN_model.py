@@ -223,7 +223,7 @@ class EHDRGANModel(BaseModel):
 
             # calculate psnr
             avg_psnr += util.calculate_psnr(fake_hdr_img, gt_img)
-            avg_normalized_psnr += util.calculate_normalized_psnr(fake_hdr_img, gt_img, np.max(gt_img))
+            avg_normalized_psnr += util.calculate_normalized_psnr(fake_hdr_img, gt_img, np.max(gt_img))  # s-PSNR
             avg_tonemapped_psnr += util.calculate_tonemapped_psnr(fake_hdr_img, gt_img, percentile=99, gamma=2.24)
 
             # visualize

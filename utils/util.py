@@ -176,3 +176,4 @@ def calculate_tonemapped_psnr(res, ref, percentile=99, gamma=2.24):
     norm_perc = np.percentile(ref, percentile)
     tonemapped_psnr = -10*np.log10(np.mean(np.power(tanh_norm_mu_tonemap(ref, norm_perc) - tanh_norm_mu_tonemap(res, norm_perc), 2)))
     return tonemapped_psnr
+
