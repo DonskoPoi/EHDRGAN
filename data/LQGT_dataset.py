@@ -41,7 +41,7 @@ class LQGTDataset(data.Dataset):
 
         # get GT image
         GT_path = self.paths_GT[index]
-        img_GT = util.read_imgdata(GT_path, ratio=alignratio)  # -> gt都是/alignratio的也就是还原到0-255色彩空间的图
+        img_GT = util.read_imgdata(GT_path, ratio=alignratio)  # -> gt都是/alignratio的也就是还原到0-65535色彩空间的图
 
         if self.opt['phase'] == 'train':
 
